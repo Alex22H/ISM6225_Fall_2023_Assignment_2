@@ -1,12 +1,17 @@
 ﻿/* 
  
-YOU ARE NOT ALLOWED TO MODIFY ANY FUNCTION DEFINATION's PROVIDED.
+YOU ARE NOT ALLOWED TO MODIFY ANY FUNCTION DEFINITION'S PROVIDED.
 WRITE YOUR CODE IN THE RESPECTIVE QUESTION FUNCTION BLOCK
 
 
 */
 
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading.Tasks.Dataflow;
 
 namespace ISM6225_Fall_2023_Assignment_2
 {
@@ -112,8 +117,67 @@ namespace ISM6225_Fall_2023_Assignment_2
         {
             try
             {
-                // Write your code here and you can modify the return value according to the requirements
-                return new List<IList<int>>();
+                // if nums is an empty array, return an empty list
+                if (nums.Length == 0)
+                {
+                    return new List<IList<int>>();
+                }
+
+                // initialize a list to hold the ranges
+                List<IList<int>> ranges = new List<IList<int>>();
+
+                // use temporary variables to hold values of the lower bound, 
+                // j holds a counter which prevents th loop from iterating forever. 
+                // N is the length of the array, we wont loop more than how many elements are in the array
+                int i = lower, j = 0, N = nums.Length;
+
+
+                // start while loop, continue until the counter reaches the length of the array
+                while (j < N)
+                {
+                    // if the number (being counted up from the lower bound) equals the jth element in
+                    // the array, add one to the counter and to i
+                    if (i == nums[j])
+                    {
+                        i++;
+                        j++;
+                    }
+
+                    // otherwise, there is a gap in the list. document where gap started and the next element in the list
+                    // less one will be the end of the gap. 
+                    else
+                    {
+                        // make a new variable to hold the value of the first element in the gap (i)
+                        int first = i;
+                        // variable to hold last element (nums[j] - 1)
+                        int last = nums[j] - 1;
+
+                        // Add first and last to the list
+                        ranges.Add(new List<int> { first, last });
+                        
+                        // update i to be the next array element value + 1
+                        i = nums[j++] + 1;
+                    }
+                }
+
+                // use if loop to check that the value of the current number is less than or equal to the upper bound
+                // if it is less than the upper bound, there is a gap
+                if (i <= upper)
+                {
+                    // if it is equal to the upper bound, add it to the ranges list
+                    if (i == upper)
+                    {
+                        ranges.Add(new List<int> { i });
+                    }
+                    //otherwise there is a gap between the value and upper bound, record both values in the list
+                    else
+                    {
+                        ranges.Add(new List<int> { i, upper });
+                    }
+                }
+
+                // return the ranges list
+                return ranges;
             }
             catch (Exception)
             {
@@ -156,8 +220,75 @@ namespace ISM6225_Fall_2023_Assignment_2
         {
             try
             {
-                // Write your code here and you can modify the return value according to the requirements
+                // Code with O(n^2) complexity;
+                // if the string input is empty or if there is an odd number of parentheses, return false
+                if (s.Length == 0 || s.Length % 2 != 0)
+                {
+                    return false;
+                }
+
+                // loop through string. while it contains consecutive parentheses, remove them
+                while (s.Contains("()") || s.Contains("[]") || s.Contains("{}"))
+                {
+                    s = s.Replace("()", "").Replace("[]", "").Replace("{}", "");
+                }
+
+                // once there are no more consecutive matching pairs, return the value. 
+                // if the string had all matching pairs, the length will be zero and return true
+                // otherwise, it will return false
                 return s.Length == 0;
+
+                /* CODE BELOW HAS O(n) COMPLEXITY
+                 * I had already written it before realizing the instructions asked for O(n^2)
+                // if the string input is empty or if there is an odd number of parentheses, return false
+                if (s.Length == 0 || s.Length % 2 != 0)
+                {
+                    return false;
+                }
+
+                //create a dictionary to hold value pairs
+                Dictionary<char, char> parDict = new Dictionary<char, char>
+                {
+                    { ')', '(' },
+                    { '}', '{' },
+                    { ']', '[' }
+                };
+                
+                //create a stack to hold brackets
+                Stack<char> charStack = new Stack<char>();
+
+                //loop through string contents
+                foreach (char c in s)
+                {
+                    // if the element is an opening parentheses, add it to the stack
+                    if (parDict.ContainsValue(c))
+                    {
+                        charStack.Push(c);
+                    }
+
+                    // if the element is a closing parentheses, check if the stack is empty or if the 
+                    // corresponding value opening bracket is on the top.
+                    else if (parDict.ContainsKey(c))
+                    {
+                        // if the stack is empty or the matching value is not on top, return false
+                        // if the opening bracket is not already on the stack, it wont be present
+                        if (charStack.Count == 0 || charStack.Peek() != parDict[c])
+                        {
+                            return false;
+                        }
+                        // if stack is not empty and the top element is the matching key-value pair of the 
+                        // closed bracket element c, pop the opening bracket from the stack
+                        else
+                        {
+                            charStack.Pop();
+                        }
+                    }
+                }
+                // if the stack is not empty, not all matching pairs were found, return false. 
+                // if it is empty, all matches were found, return true
+                return (charStack.Count == 0);
+                */
+
             }
             catch (Exception)
             {
@@ -191,8 +322,31 @@ namespace ISM6225_Fall_2023_Assignment_2
         {
             try
             {
-                // Write your code here and you can modify the return value according to the requirements
-                return 1;
+                // if there is just one element in the prices array, the profit is 0.
+                if (prices.Length == 1)
+                {
+                    return 0;
+                }
+
+                // make two variables to hold the min value and the profit
+                // assume the min price is on the first day and we have 0 profit
+                int min = prices[0];
+                int profit = 0;
+
+                // loop through elements in prices array
+                foreach (int day in prices)
+                {
+                    // if the value of profit is less than the current day's price minus the lowest price so far, 
+                    // update profit with the new highest profit
+                    profit = Math.Max(profit, day-min);
+
+                    //if the current price of the day is less than the lowest price so far, update the min with the 
+                    // new lowest price
+                    min = Math.Min(min, day);
+                }
+
+                // return the profit 
+                return profit;
             }
             catch (Exception)
             {
@@ -229,8 +383,43 @@ namespace ISM6225_Fall_2023_Assignment_2
         {
             try
             {
-                // Write your code here and you can modify the return value according to the requirements
-                return false;
+                // if the string is empty, return false
+                if (s.Length == 0)
+                {
+                    return false;
+                }
+
+                //create a dictionary to hold strobogrammatic pairs
+                Dictionary<char, char> strobogrammaticPairs = new Dictionary<char, char>
+                {
+                    {'0', '0'},
+                    {'1', '1'},
+                    {'8', '8'},
+                    {'6', '9'},
+                    {'9', '6'}
+                };
+
+                // use temporary variables to hold counts while iterating
+                // i starts at index 0 and j starts at the end of the string
+                int i = 0, j = s.Length - 1;
+
+                // perform the loop until the counters meet at the middle of the string
+                while (i <= j)
+                {
+                    // if i's element is not a key in the dictionary or if it is an element and it's corresponding
+                    // value doesnt match the jth element, return false
+                    if (!strobogrammaticPairs.ContainsKey(s[i]) || strobogrammaticPairs[s[i]] != s[j])
+                    {
+                        return false;
+                    }
+
+                    // if they match, iterate one space in from the right and one place in from the left
+                    i++;
+                    j--;
+                }
+
+                // if the loop completes without a false value, the number is strobogrammatic. return true
+                return true;
             }
             catch (Exception)
             {
@@ -271,8 +460,38 @@ namespace ISM6225_Fall_2023_Assignment_2
         {
             try
             {
-                // Write your code here and you can modify the return value according to the requirements
-                return 0;
+                // if the array is empty, return 0. There are no pairs
+                if (nums.Length == 0)
+                {
+                    return 0;
+                }
+
+                // make a dictionary to hold unique values and their counts
+                Dictionary<int, int> countDict = new Dictionary<int, int>();
+
+                // use pairs variable to hold the total number of number pairs
+                int pairs = 0;
+
+                // loop through values in the array
+                foreach (int i in nums)
+                {
+                    // if the dictionary contains the current value, add the total instances to the pairs variable
+                    // and one to key-value of the number
+                    if (countDict.ContainsKey(i))
+                    {
+                        pairs += countDict[i];
+                        countDict[i]++;
+                    }
+
+                    // if the number is not yet in the dictionary, add it and set the matching value to 1
+                    else
+                    {
+                        countDict[i] = 1;
+                    }
+                }
+
+                //return the number of pairs 
+                return pairs;
             }
             catch (Exception)
             {
@@ -321,8 +540,24 @@ namespace ISM6225_Fall_2023_Assignment_2
         {
             try
             {
-                // Write your code here and you can modify the return value according to the requirements
-                return 0;
+                // if there are no number in the array, the max is 0.
+                if(nums.Length == 0)
+                {
+                    return 0;
+                }
+
+                // sort the array so the larget values are in order
+                // performing this sort makes the algoritm O(n log n) time complex
+                Array.Sort(nums);
+
+                // if the array is less than 3 elements long, return the last element (the max of the array)
+                if (nums.Length < 3)
+                {
+                    return nums[nums.Length - 1];
+                }
+
+                // if it is longer than 3 elements, return the number that is 3rd from the last position
+                return nums[nums.Length - 3];
             }
             catch (Exception)
             {
@@ -354,8 +589,38 @@ namespace ISM6225_Fall_2023_Assignment_2
         {
             try
             {
-                // Write your code here and you can modify the return value according to the requirements
-                return new List<string>() { };
+                // if the current state sting has less than 2 elements, return an empty list
+                if (currentState.Length < 2)
+                {
+                    return new List<string>();
+                }
+
+                // initialize a new list
+                List<string> result = new List<string>();
+
+                // loop through elements in currentState string
+                for (int i = 1; i < currentState.Length; i++)
+                {
+                    // if the current element is not a plus or if the previous element is not a plus, 
+                    // The move is not valid, the loop cycles to the next iteration
+                    if (currentState[i] != '+' || currentState[i - 1] != '+')
+                        continue;
+
+                    // if the moves are valid, modify the list with the move
+                    // create a new string builder with the contents of the currentState string
+                    // can modify contents of string builder, not a regular string
+                    StringBuilder nextMove = new StringBuilder(currentState);
+
+                    // change the ith element to a - and the ith - 1 element to a -
+                    nextMove[i] = '-';
+                    nextMove[i - 1] = '-';
+
+                    // add the modified string to the result list
+                    result.Add(nextMove.ToString());
+                }
+
+                // once all the chars in the string have been looped through, print the result.
+                return result;
             }
             catch (Exception)
             {
@@ -383,8 +648,27 @@ namespace ISM6225_Fall_2023_Assignment_2
 
         public static string RemoveVowels(string s)
         {
-            // Write your code here and you can modify the return value according to the requirements
-            return "";
+            //if the input string is empty, return an empty string
+            if (s.Length == 0)
+            {
+                return "";
+            }
+            // use a stringbuilder to create a modifiable string
+            StringBuilder noVowels = new StringBuilder();
+
+            // loop through characters in input string
+            foreach (char c in s)
+            {
+                // if the character is not a vowel, add it to the new string noVowels
+                // if it is a vowel, don't add it
+                if (c != 'a' && c != 'e' && c != 'i' && c != 'o' && c != 'u')
+                {
+                    noVowels.Append(c);
+                }
+            }
+
+            // convert the stringbuilder to a string and return it from the method
+            return noVowels.ToString();
         }
 
         /* Inbuilt Functions - Don't Change the below functions */
